@@ -7,10 +7,23 @@ if [ ! -d git ]; then
 	git init
 	echo .msg >> .git/info/exclude
 	echo .changes >> .git/info/exclude
+	echo .mailmap >> .git/info/exclude
+	echo .rev >> .git/info/exclude
+	if [ -e ../mailmap ]; then
+		cat ../mailmap > .mailmap
+	fi
 else
 	cd git
+	if [ -e ".rev" ]; then
+		read rr < .rev
+		if [ "$rev" -le "$rr" ]; then
+			echo "$rr already imported";
+			exit 1
+		fi
+	fi
 fi
 rm -rf -- *
+echo "$rev" > .rev
 > .msg
 for f in ../sources/$rev/*.*; do
 	case "$f" in
@@ -30,4 +43,4 @@ for f in ../sources/$rev/*.*; do
 	esac
 done
 git add -A
-../.docommit "$rev" < .msg
+../.docommit "$rev"

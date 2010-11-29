@@ -43,7 +43,7 @@ sub parse_suse {
   $tdt += ($zone || 0);
   my $ok = 1;
   my $change = '';
-  while(<STDIN>) {
+  while(<CHANGES>) {
     chomp;
     last if /^(?:\* )?([A-Za-z]+\s+[A-Za-z]+\s+[0-9].*[0-9][0-9][0-9][0-9])(.*\@.*$)/;
     next if (/^--------------/);
@@ -64,7 +64,9 @@ sub parse_suse {
 
 my $rev = shift @ARGV || die "specify revision";
 
-while(<STDIN>) {
+open (CHANGES, '<', '.msg') || die "can't open .msg: $!\n";
+
+while(<CHANGES>) {
 	next if (/^\s+$/);
 	next if (/^--------------/);
 	last;
@@ -84,20 +86,21 @@ while(defined $_) {
 		$_ = <>;
 	}
 }
+close CHANGES;
 
-my %mailmap = (
-"coolo\@novell.com" => "Stephan Kulow",
-"coolo\@suse.de" => "Stephan Kulow",
-"detlef\@links2linux.de" => "Detlef Reichel",
-"dmueller\@suse.de" => "Dirk Mueller",
-"lnussel\@suse.de" => "Ludwig Nussel",
-"meissner\@suse.de" => "Marcus Meissner",
-"mls\@suse.de" => "Michael Schroeder",
-"mmarek\@suse.cz" => "Michal Marek",
-"rguenther\@suse.de" => "Richard Guenther",
-"ro\@suse.de" => "Rüdiger Oertel",
-"sbrabec\@suse.cz" => "Stanislav Brabec",
-);
+my %mailmap;
+
+if (open (F, '<', '.mailmap')) {
+	while (<F>) {
+		chomp;
+		next if /^#/;
+		my ($a, $n) = split(/\t/);
+		next unless $a;
+		next unless $n;
+		$mailmap{$a} = $n;
+	}
+	close F;
+}
 
 my $msg = '';
 if (@changes != 1 || $error) {
@@ -112,7 +115,21 @@ if (@changes != 1 || $error) {
 	}
 	$msg = 'initial commit' unless $msg;
 } else {
-	$ENV{'GIT_AUTHOR_NAME'} = $mailmap{$changes[0]->[3]} || "Unknown";
+	my $addr = $changes[0]->[3];
+	if ($addr && !$mailmap{$addr}) {
+		my $name;
+		while (!$name) {
+			print "Enter real name for $addr:\n";
+			$name = <STDIN>;
+			chomp $name;
+		}
+		$mailmap{$addr} = $name;
+		if (open (O, '>>', '.mailmap')) {
+			print O "$addr\t$name\n";
+			close O;
+		}
+	}
+	$ENV{'GIT_AUTHOR_NAME'} = $mailmap{$addr} || "Unknown";
 	$ENV{'GIT_AUTHOR_EMAIL'} = $changes[0]->[3];
 	$ENV{'GIT_AUTHOR_DATE'} = $changes[0]->[2];
 	$msg .= $changes[0]->[1] if $changes[0]->[1];
