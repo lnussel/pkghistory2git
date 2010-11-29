@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+rev="$1"
+if [ ! -d git ]; then
+	mkdir git
+	cd git
+	git init
+	echo .msg >> .git/info/exclude
+	echo .changes >> .git/info/exclude
+else
+	cd git
+fi
+rm -rf -- *
+> .msg
+for f in ../sources/$rev/*.*; do
+	case "$f" in
+		*.tar.gz|*.tgz) tar -xzf "$f" ;;
+		*.tar.bz2|*.tbz2) tar -xjf "$f" ;;
+		*.tar.*) echo "unhandled tar archive $f, please fix script"; exit 1;;
+		*.changes)
+		if [ -e .changes ]; then
+			echo >> .msg
+			diff -u .changes "$f" | awk '/^\+\+\+/ {next;}/^\+/ {sub(/^\+/,"",$0); print}' >> .msg
+		fi
+		cat "$f" > .changes
+		;;
+		*.spec) ;;
+		*.old) ;;
+		*) cp "$f" . ;;
+	esac
+done
+git add -A
+../.docommit "$rev" < .msg

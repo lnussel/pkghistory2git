@@ -1,0 +1,2 @@
+#!/bin/bash
+git filter-branch --tree-filter "git mv post-build-checks-1.0/* ."
