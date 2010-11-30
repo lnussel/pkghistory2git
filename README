@@ -1,0 +1,12 @@
+These scripts are intended to convert the history of packages that
+use a single tar ball to a git repo.
+
+Create git repo from complete history:
+./coall openSUSE:Factory foo
+./importall
+
+Checkout a single rev:
+./co openSUSE:Factory foo 42
+
+Import single rev to git:
+./doimport 42
