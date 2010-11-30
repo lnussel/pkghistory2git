@@ -1,4 +1,15 @@
 #!/bin/bash
+
+cleanup()
+{
+	trap EXIT
+	if [ -e .changes.bak ]; then
+		mv .changes.bak .changes
+	fi
+}
+
+trap cleanup EXIT
+
 set -e
 rev="$1"
 if [ ! -d git ]; then
@@ -18,7 +29,7 @@ else
 		read rr < .rev
 		if [ "$rev" -le "$rr" ]; then
 			echo "$rr already imported";
-			exit 1
+			exit 0
 		fi
 	fi
 fi
@@ -32,6 +43,7 @@ for f in ../sources/$rev/*.*; do
 		*.tar.*) echo "unhandled tar archive $f, please fix script"; exit 1;;
 		*.changes)
 		if [ -e .changes ]; then
+			cat .changes > .changes.bak
 			echo >> .msg
 			diff -u .changes "$f" | awk '/^\+\+\+/ {next;}/^\+/ {sub(/^\+/,"",$0); print}' >> .msg
 		fi
@@ -42,5 +54,6 @@ for f in ../sources/$rev/*.*; do
 		*) cp "$f" . ;;
 	esac
 done
+rm -f .changes.bak
 git add -A
 ../.docommit "$rev"
