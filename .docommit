@@ -83,7 +83,7 @@ while(defined $_) {
 		$error = 1;
 		chomp;
 		push @changes, [undef, $_, undef];
-		$_ = <>;
+		$_ = <CHANGES>;
 	}
 }
 close CHANGES;
@@ -113,13 +113,21 @@ if (@changes != 1 || $error) {
 		$msg .= $_->[1]. "\n";
 		$msg .= "-------------------------------------------------------------------\n" if $_->[0];
 	}
-	$msg = 'initial commit' unless $msg;
+	if (!$msg) {
+		if ($rev == 1) {
+			$msg = 'initial commit';
+		} else {
+			$msg = '(none)';
+		}
+		$ENV{'GIT_AUTHOR_NAME'} = "Unknown";
+		$ENV{'GIT_AUTHOR_EMAIL'} = 'nobody@suse.de';
+	}
 } else {
 	my $addr = $changes[0]->[3];
 	if ($addr && !$mailmap{$addr}) {
 		my $name;
 		while (!$name) {
-			print "Enter real name for $addr:\n";
+			print "\aEnter real name for $addr:\n";
 			$name = <STDIN>;
 			chomp $name;
 		}
