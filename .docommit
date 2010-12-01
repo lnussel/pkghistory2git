@@ -104,9 +104,21 @@ if (open (F, '<', '.mailmap')) {
 
 my $msg = '';
 if (@changes != 1 || $error) {
+	if (@changes) {
+		my $addr = $changes[0]->[3];
+		if ($addr) {
+			# in case all changelog entries are from the same author ...
+			$ENV{'GIT_AUTHOR_NAME'} = $mailmap{$addr} || "Unknown";
+			$ENV{'GIT_AUTHOR_EMAIL'} = $changes[0]->[3];
+		}
+		# use commit date from newest entry
+		$ENV{'GIT_AUTHOR_DATE'} = $changes[0]->[2]
+	}
 	for (@changes) {
-		$ENV{'GIT_AUTHOR_NAME'} = "Various";
-		$ENV{'GIT_AUTHOR_EMAIL'} = 'nobody@suse.de';
+		if ($ENV{'GIT_AUTHOR_EMAIL'} && $ENV{'GIT_AUTHOR_EMAIL'} ne $_->[3]) {
+			$ENV{'GIT_AUTHOR_NAME'} = "Various";
+			$ENV{'GIT_AUTHOR_EMAIL'} = 'nobody@suse.de';
+		}
 		$msg .= "revision $rev\n\n" if $rev;
 		$rev = undef;
 		$msg .= $_->[0]. "\n\n" if $_->[0];
@@ -142,7 +154,7 @@ if (@changes != 1 || $error) {
 	$ENV{'GIT_AUTHOR_DATE'} = $changes[0]->[2];
 	$msg .= $changes[0]->[1] if $changes[0]->[1];
 }
-open (F, '|-', "git", "commit", '-F-', @ARGV) or die "$!\n";
+open (F, '|-', "git", "commit", '-q', '-F-', @ARGV) or die "$!\n";
 print F $msg;
 close F;
 #open (O, ">>/tmp/foo");

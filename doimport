@@ -46,6 +46,8 @@ for f in ../sources/$rev/*; do
 			cat .changes > .changes.bak
 			echo >> .msg
 			diff -u .changes "$f" | awk '/^\+\+\+/ {next;}/^\+/ {sub(/^\+/,"",$0); print}' >> .msg
+		else
+			cat "$f" > .msg
 		fi
 		cat "$f" > .changes
 		;;
