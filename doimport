@@ -36,7 +36,7 @@ fi
 rm -rf -- *
 echo "$rev" > .rev
 > .msg
-for f in ../sources/$rev/*.*; do
+for f in ../sources/$rev/*; do
 	case "$f" in
 		*.tar.gz|*.tgz) tar -xzf "$f" ;;
 		*.tar.bz2|*.tbz2) tar -xjf "$f" ;;
@@ -51,6 +51,9 @@ for f in ../sources/$rev/*.*; do
 		;;
 		*.spec) ;;
 		*.old) ;;
+		*/MD5SUMS) ;;
+		*/MD5SUMS.meta) ;;
+		*/ready) ;;
 		*) cp "$f" . ;;
 	esac
 done
