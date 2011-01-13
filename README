@@ -10,3 +10,11 @@ Checkout a single rev:
 
 Import single rev to git:
 ./doimport 42
+
+----
+from /work/save ..
+mkdir sources
+cd sources
+../linkoldpkg
+cd ..
+./importall
