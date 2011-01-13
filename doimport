@@ -12,6 +12,11 @@ trap cleanup EXIT
 
 set -e
 rev="$1"
+irev="${2:-$1}"
+if [ -n "${rev//[0-9]/}" ]; then
+	echo "invalid rev $rev"
+	exit 1
+fi
 if [ ! -d git ]; then
 	mkdir git
 	cd git
@@ -33,10 +38,10 @@ else
 		fi
 	fi
 fi
-rm -rf -- *
 echo "$rev" > .rev
+rm -rf -- *
 > .msg
-for f in ../sources/$rev/*; do
+for f in ../sources/$irev/*; do
 	case "$f" in
 		*.tar.gz|*.tgz) tar -xzf "$f" ;;
 		*.tar.bz2|*.tbz2) tar -xjf "$f" ;;
