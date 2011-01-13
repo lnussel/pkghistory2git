@@ -1,0 +1,15 @@
+#!/bin/bash
+if [ -z "$1" -o ! -d /work/SAVE/oldpackages/stable/"$1" ]; then
+	echo "specify package"
+	exit 1
+fi
+i=0
+for file in /work/SAVE/oldpackages/stable/$1/*; do
+	test -e $i || ln -s $file $i
+	: $((++i))
+done
+h=`/work/src/bin/getpac -n $1`
+if [ $? -eq 0 ]; then
+	rm -f HEAD
+	ln -s $h HEAD
+fi

@@ -1,0 +1,15 @@
+#!/bin/bash
+# usage: importall [min [max]]
+
+set -e
+i=${1:-1}
+while [ -d sources/$i ]; do
+	echo "importing $i"
+	./doimport "$i"
+	i=$((i+1))
+	if [ -n "$2" ]; then
+		if [ "$i" -gt "$2"]; then
+			break;
+		fi
+	fi
+done
