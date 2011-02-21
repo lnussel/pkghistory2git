@@ -3,6 +3,9 @@ if [ -z "$1" -o ! -d /work/SAVE/oldpackages/stable/"$1" ]; then
 	echo "specify package"
 	exit 1
 fi
+if [ "${PWD##*/}" != "sources" ]; then
+	cd sources || { echo "sources dir missing"; exit 1; }
+fi
 i=0
 for file in /work/SAVE/oldpackages/stable/$1/*; do
 	test -e $i || ln -s $file $i
